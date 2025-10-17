@@ -52,7 +52,7 @@ if __name__ == "__main__":
     puzzle_select = input("Type “1” to use a default puzzle, or “2” to enter your own puzzle.")
 
     if (puzzle_select == 1):
-        board = [[4, 6, 8],[2, 0, 1], [5, 5, 7]]
+        board = [[4, 6, 8], [2, 0, 1], [5, 3, 7]]
 
     if (puzzle_select == 2):
         board = []
