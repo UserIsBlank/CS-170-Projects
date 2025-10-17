@@ -13,6 +13,7 @@ class EightPuzzle:
         self.empty_pos = self.find_empty_pos()
 
     def find_empty_pos(self):
+
         # Find the position of the empty tile (0)
         for i in range(3):
             for j in range(3):
@@ -22,6 +23,9 @@ class EightPuzzle:
         raise ValueError("No empty tile (0) found in the puzzle.")
     
     def is_goal(self):
+
+        # Check if current state is the goal state
+
 
         return None
 
@@ -33,15 +37,36 @@ class EightPuzzleSolver:
         return None
     
     @staticmethod
-    def a_star_search(puzzle, heuristic):
+    def a_star_missplaced(puzzle):
+
+        return None
+    
+    @staticmethod
+    def a_star_euclidean(puzzle):
 
         return None
 
 if __name__ == "__main__":
 
+    print("Welcome to our 8 puzzle solver!")
+    puzzle_select = input("Type “1” to use a default puzzle, or “2” to enter your own puzzle.")
 
-    initial_state = [
-        [1, 2, 3],
-        [4, 8, 0],
-        [7, 6, 5]
-    ]
+    if (puzzle_select == 1):
+        board = [[4, 6, 8],[2, 0, 1], [5, 5, 7]]
+
+    if (puzzle_select == 2):
+        board = []
+
+        print("Enter your puzzle, use a zero to represent the blank")
+        print("Enter the first row, use space or tabs between numbers")
+        row1 = list(map(int, input().split()))
+
+        print("Enter the second row, use space or tabs between numbers")
+        row2 = list(map(int, input().split()))
+
+        print("Enter the third row, use space or tabs between numbers")
+        row3 = list(map(int, input().split()))
+
+        board = [row1, row2, row3]
+        
+
