@@ -2,7 +2,7 @@
 
 class EightPuzzle:
 
-    def __init__(self, initial_state = None):
+    def __init__(self, puzz_board, move, depth, cost, parent, initial_state = None):
 
         # Initialize start state
         if initial_state is None:
@@ -11,6 +11,12 @@ class EightPuzzle:
             self.state = initial_state
 
         self.empty_pos = self.find_empty_pos()
+
+        self.puzz_board = puzz_board #current board state
+        self.move = move #movement of blank tile (up, down, left, right)
+        self.depth = depth #depth of search tree (same as cost for UCS)
+        self.cost = cost #depth + heuristic
+        self.parent = parent #node's parent state
 
     def find_empty_pos(self):
 
@@ -44,6 +50,11 @@ class EightPuzzleSolver:
     @staticmethod
     def a_star_euclidean(puzzle):
 
+        return None
+    
+    @staticmethod
+    def a_star_search_manhattan(puzzle, heuristic):
+        
         return None
 
 if __name__ == "__main__":
