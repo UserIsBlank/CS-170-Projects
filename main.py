@@ -46,9 +46,25 @@ class EightPuzzleSolver:
         return None
     
     @staticmethod
-    def a_star_missplaced(puzzle):
+    def a_star_misplaced(puzzle):
 
         return None
+    
+    # Calculate misplaced tile heuristic
+    @staticmethod
+    def misplaced_heuristic(state):
+        goal_counter = 0 #goal state is 123456780
+        heuristic = 0
+        for i in range(3):
+            for j in range(3):
+                if (i, j) == (2, 2): #check last tile
+                    if state[i][j] != 0: 
+                        heuristic += 1
+                    break
+                goal_counter += 1 #increment because goal state is in order
+                if state[i][j] != goal_counter: #compare each tile up to last tile
+                    heuristic += 1
+        return heuristic
     
     @staticmethod
     def a_star_euclidean(puzzle):
@@ -115,7 +131,7 @@ class EightPuzzleSolver:
 if __name__ == "__main__":
 
     print("Welcome to our 8 puzzle solver!")
-    puzzle_select = input("Type “1” to use a default puzzle, or “2” to enter your own puzzle.")
+    puzzle_select = int(input("Type “1” to use a default puzzle, or “2” to enter your own puzzle."))
 
     if (puzzle_select == 1):
         board = [[4, 6, 8], [2, 0, 1], [5, 3, 7]]
