@@ -1,4 +1,5 @@
 # PROJECT 1 - The Eight Puzzle
+import heapq
 
 class EightPuzzle:
 
@@ -28,11 +29,8 @@ class EightPuzzle:
         raise ValueError("No empty tile (0) found in the puzzle.")
     
     def is_goal(self):
-
-        # Check if current state is the goal state
-
-
-        return None
+        goal_state = [[1,2,3],[4,5,6],[7,8,0]]
+        return self.state == goal_state
     
     # Override < so that priority queue knows lowest cost is being prioritized
     def __lt__(self, other):
@@ -47,9 +45,41 @@ class EightPuzzleSolver:
     
     @staticmethod
     def a_star_misplaced(puzzle):
-
+        frontier = []
+        heapq.heappush(frontier, puzzle)
+        explored = set()
+        nodes_expanded = 0
+        max_queue_size = 1
+        
+        while frontier:
+            max_queue_size = max(max_queue_size, len(frontier))
+            current_node = heapq.heappop(frontier)
+            
+            if current_node.is_goal():
+                print("Goal!!!")
+                print(f"Nodes expanded: {nodes_expanded}")
+                print(f"Max queue size: {max_queue_size}")
+                print(f"Depth: {current_node.depth}")
+                return current_node
+            
+            state_tuple = EightPuzzleSolver.state_to_tuple(current_node.state)
+            if state_tuple in explored:
+                continue
+            explored.add(state_tuple)
+            nodes_expanded += 1
+            
+            successors = EightPuzzleSolver.get_successors(current_node)
+            
+            for successor in successors:
+                successor_tuple = EightPuzzleSolver.state_to_tuple(successor.state)
+                if successor_tuple not in explored:
+                    h_n = EightPuzzleSolver.misplaced_heuristic(successor.state)
+                    g_n = successor.depth
+                    successor.cost = g_n + h_n
+                    heapq.heappush(frontier, successor)
+        
         return None
-    
+
     # Calculate misplaced tile heuristic
     @staticmethod
     def misplaced_heuristic(state):
@@ -127,6 +157,41 @@ class EightPuzzleSolver:
             return new_state
         else:
             return None
+    
+    @staticmethod
+    def state_to_tuple(state):
+        return tuple(tuple(row) for row in state)
+    
+    @staticmethod
+    def get_successors(node):
+        successors = []
+        empty_pos = node.empty_pos
+        
+        moves = [
+            ("Left", EightPuzzleSolver.move_left),
+            ("Right", EightPuzzleSolver.move_right),
+            ("Up", EightPuzzleSolver.move_up),
+            ("Down", EightPuzzleSolver.move_down)
+        ]
+        
+        for move_name, move_func in moves:
+            new_state = move_func(node.state, empty_pos)
+            if new_state is not None:
+                successor = EightPuzzle(
+                    move=move_name,
+                    depth=node.depth + 1,
+                    cost=0,
+                    parent=node,
+                    initial_state=new_state
+                )
+                successors.append(successor)
+        
+        return successors
+    
+    @staticmethod
+    def print_state(state):
+        for row in state:
+            print(' '.join('b' if tile == 0 else str(tile) for tile in row))
 
 if __name__ == "__main__":
 
