@@ -1,5 +1,6 @@
 # PROJECT 1 - The Eight Puzzle
 import heapq
+import math
 
 class EightPuzzle:
 
@@ -55,6 +56,14 @@ class EightPuzzleSolver:
             max_queue_size = max(max_queue_size, len(frontier))
             current_node = heapq.heappop(frontier)
             
+            # print initial state
+            if current_node.state == puzzle.state:
+                print(f"\nExpanding state")
+                for row in current_node.state:
+                    for elem in row:
+                        print(elem, end = " ")
+                    print()
+            
             if current_node.is_goal():
                 print("Goal!!!")
                 print(f"Nodes expanded: {nodes_expanded}")
@@ -62,6 +71,15 @@ class EightPuzzleSolver:
                 print(f"Depth: {current_node.depth}")
                 return current_node
             
+            # print what state is being expanded + cost + depth
+            if current_node.state != puzzle.state:
+                print(f"\nThe best state to expand with g(n) = {current_node.depth} and h(n) = {current_node.cost - current_node.depth} is...")
+                for row in current_node.state:
+                    for elem in row:
+                        print(elem, end = " ")
+                    print()
+                print("Expanding this node...\n")
+
             state_tuple = EightPuzzleSolver.state_to_tuple(current_node.state)
             if state_tuple in explored:
                 continue
@@ -102,9 +120,32 @@ class EightPuzzleSolver:
         return None
     
     @staticmethod
-    def a_star_search_manhattan(puzzle, heuristic):
+    def euclidean_heuristic(state):
+        # dict for goal state
+        goal_state = {
+            1: (0, 0), 2: (0, 1), 3: (0, 2),
+            4: (1, 0), 5: (1, 1), 6: (1, 2),
+            7: (2, 0), 8: (2, 1), 0: (2, 2)
+        }
+        # dict for current state
+        state_tile_coords = {}
+        total_distance = 0
+
+        # populate current state dict w/ tile # and coordinates
+        for i in range(3):
+            for j in range(3):
+                state_tile = state[i][j]
+                state_tile_coords[state_tile] = (i,j)
         
-        return None
+        # calculate euclidean distance between each corresponding tile
+        for tile, coord in state_tile_coords.items():
+            (i, j) = coord # current coordinate of tile
+            (goal_i, goal_j) = goal_state[tile] # find goal coordinate of corresponding tile
+
+            euclidean_distance = math.sqrt(pow((goal_i - i), 2) + pow((goal_j - j), 2))
+            total_distance += euclidean_distance
+
+        return total_distance
     
     # Create new board state after moving empty tile left
     @staticmethod
@@ -199,7 +240,7 @@ if __name__ == "__main__":
     puzzle_select = int(input("Type “1” to use a default puzzle, or “2” to enter your own puzzle."))
 
     if (puzzle_select == 1):
-        board = [[4, 6, 8], [2, 0, 1], [5, 3, 7]]
+        board = [[1, 2, 0], [4, 5, 3], [7, 8, 6]]
 
     if (puzzle_select == 2):
         board = []
