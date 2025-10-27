@@ -59,10 +59,7 @@ class EightPuzzleSolver:
             # print initial state
             if current_node.state == puzzle.state:
                 print(f"\nExpanding state")
-                for row in current_node.state:
-                    for elem in row:
-                        print(elem, end = " ")
-                    print()
+                EightPuzzleSolver.print_state(current_node.state)
             
             if current_node.is_goal():
                 print("Goal!!!")
@@ -74,10 +71,7 @@ class EightPuzzleSolver:
             # print what state is being expanded + cost + depth
             if current_node.state != puzzle.state:
                 print(f"\nThe best state to expand with g(n) = {current_node.depth} and h(n) = {current_node.cost - current_node.depth} is...")
-                for row in current_node.state:
-                    for elem in row:
-                        print(elem, end = " ")
-                    print()
+                EightPuzzleSolver.print_state(current_node.state)
                 print("Expanding this node...\n")
 
             state_tuple = EightPuzzleSolver.state_to_tuple(current_node.state)
@@ -101,16 +95,16 @@ class EightPuzzleSolver:
     # Calculate misplaced tile heuristic
     @staticmethod
     def misplaced_heuristic(state):
-        goal_counter = 0 #goal state is 123456780
         heuristic = 0
+        goal_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
+        
         for i in range(3):
             for j in range(3):
-                if (i, j) == (2, 2): #check last tile
-                    if state[i][j] != 0: 
-                        heuristic += 1
-                    break
-                goal_counter += 1 #increment because goal state is in order
-                if state[i][j] != goal_counter: #compare each tile up to last tile
+                # skip blank tile
+                if state[i][j] == 0:
+                    continue
+                # compare state tile w/ goal tile
+                if state[i][j] != goal_state[i][j]:
                     heuristic += 1
         return heuristic
     
@@ -256,5 +250,7 @@ if __name__ == "__main__":
         row3 = list(map(int, input().split()))
 
         board = [row1, row2, row3]
+    
+    puzz = EightPuzzle(None, 0, 0, None, board)
         
 
