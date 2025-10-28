@@ -66,17 +66,19 @@ class EightPuzzleSolver:
                 print(f"Depth: {current_node.depth}")
                 return current_node
             
+            state_tuple = EightPuzzleSolver.state_to_tuple(current_node.state)
+            # skip over node if it's already been explored (cheapeast path has been found)
+            if state_tuple in explored:
+                continue
+
+            explored.add(state_tuple)
+            
             # print what state is being expanded + cost + depth
             if current_node.state != puzzle.state:
                 print(f"\nThe best state to expand with g(n) = {current_node.depth} and h(n) = {current_node.cost - current_node.depth} is...")
                 EightPuzzleSolver.print_state(current_node.state)
                 print("Expanding this node...\n")
 
-            state_tuple = EightPuzzleSolver.state_to_tuple(current_node.state)
-            # skip over node if it's already been explored (cheapeast path has been found)
-            if state_tuple in explored:
-                continue
-            explored.add(state_tuple)
             nodes_expanded += 1
             
             successors = EightPuzzleSolver.get_successors(current_node)
@@ -240,7 +242,7 @@ if __name__ == "__main__":
     puzzle_select = int(input("Type “1” to use a default puzzle, or “2” to enter your own puzzle.\n"))
 
     if (puzzle_select == 1):
-        board = [[1, 2, 0], [4, 5, 3], [7, 8, 6]]
+        board = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
     if (puzzle_select == 2):
         board = []
@@ -256,11 +258,12 @@ if __name__ == "__main__":
         row3 = list(map(int, input().split()))
 
         board = [row1, row2, row3]
-    
+    1
     puzz = EightPuzzle(None, 0, 0, None, board)
 
     algo_select = int(input("Enter your choice of algorithm\n1. Uniform Cost Serch\n2. A* With Misplaced Tile Heuristic\n3. A* With Euclidean Distance Heuristic\n"))
     if algo_select == 1:
+        puzz.cost == 0
         EightPuzzleSolver.search(puzz, "uniform")
     elif algo_select == 2:
         EightPuzzleSolver.search(puzz, "misplaced")
