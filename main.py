@@ -39,28 +39,26 @@ class EightPuzzle:
 
 class EightPuzzleSolver:
 
+    # general search algorithm
     @staticmethod
-    def uniform_cost_search(puzzle):
-
-        return None
-    
-    @staticmethod
-    def a_star_misplaced(puzzle):
+    def search(puzzle, algorithm):
         frontier = []
         heapq.heappush(frontier, puzzle)
         explored = set()
         nodes_expanded = 0
         max_queue_size = 1
         
+        # loop through frontier nodes
         while frontier:
             max_queue_size = max(max_queue_size, len(frontier))
-            current_node = heapq.heappop(frontier)
+            current_node = heapq.heappop(frontier) # pop node w/ lowest cost
             
             # print initial state
             if current_node.state == puzzle.state:
                 print(f"\nExpanding state")
                 EightPuzzleSolver.print_state(current_node.state)
             
+            # check is current node is goal and print out info
             if current_node.is_goal():
                 print("Goal!!!")
                 print(f"Nodes expanded: {nodes_expanded}")
@@ -75,6 +73,7 @@ class EightPuzzleSolver:
                 print("Expanding this node...\n")
 
             state_tuple = EightPuzzleSolver.state_to_tuple(current_node.state)
+            # skip over node if it's already been explored (cheapeast path has been found)
             if state_tuple in explored:
                 continue
             explored.add(state_tuple)
@@ -82,13 +81,20 @@ class EightPuzzleSolver:
             
             successors = EightPuzzleSolver.get_successors(current_node)
             
+            # loop through all successors of node
             for successor in successors:
                 successor_tuple = EightPuzzleSolver.state_to_tuple(successor.state)
                 if successor_tuple not in explored:
-                    h_n = EightPuzzleSolver.misplaced_heuristic(successor.state)
-                    g_n = successor.depth
-                    successor.cost = g_n + h_n
-                    heapq.heappush(frontier, successor)
+                    # check which search algorithm is being used for heuristic
+                    if algorithm == "uniform":
+                        h_n = 0
+                    elif algorithm == "misplaced":
+                        h_n = EightPuzzleSolver.misplaced_heuristic(successor.state)
+                    elif algorithm == "euclidean":
+                        h_n = EightPuzzleSolver.euclidean_heuristic(successor.state)
+                    g_n = successor.depth 
+                    successor.cost = g_n + h_n #find cost
+                    heapq.heappush(frontier, successor) #push successors into queue
         
         return None
 
@@ -107,11 +113,6 @@ class EightPuzzleSolver:
                 if state[i][j] != goal_state[i][j]:
                     heuristic += 1
         return heuristic
-    
-    @staticmethod
-    def a_star_euclidean(puzzle):
-
-        return None
     
     @staticmethod
     def euclidean_heuristic(state):
@@ -193,15 +194,18 @@ class EightPuzzleSolver:
         else:
             return None
     
+    # convert state to tuple
     @staticmethod
     def state_to_tuple(state):
         return tuple(tuple(row) for row in state)
     
+    # get successors of current node
     @staticmethod
     def get_successors(node):
         successors = []
         empty_pos = node.empty_pos
         
+        # all possible moves
         moves = [
             ("Left", EightPuzzleSolver.move_left),
             ("Right", EightPuzzleSolver.move_right),
@@ -209,9 +213,11 @@ class EightPuzzleSolver:
             ("Down", EightPuzzleSolver.move_down)
         ]
         
+        # loop through all possible moves blank tile can make
         for move_name, move_func in moves:
             new_state = move_func(node.state, empty_pos)
-            if new_state is not None:
+            if new_state is not None: # check legal move
+                # create new successor nodes w/ corresponding current node as parent
                 successor = EightPuzzle(
                     move=move_name,
                     depth=node.depth + 1,
@@ -231,7 +237,7 @@ class EightPuzzleSolver:
 if __name__ == "__main__":
 
     print("Welcome to our 8 puzzle solver!")
-    puzzle_select = int(input("Type “1” to use a default puzzle, or “2” to enter your own puzzle."))
+    puzzle_select = int(input("Type “1” to use a default puzzle, or “2” to enter your own puzzle.\n"))
 
     if (puzzle_select == 1):
         board = [[1, 2, 0], [4, 5, 3], [7, 8, 6]]
@@ -252,5 +258,13 @@ if __name__ == "__main__":
         board = [row1, row2, row3]
     
     puzz = EightPuzzle(None, 0, 0, None, board)
+
+    algo_select = int(input("Enter your choice of algorithm\n1. Uniform Cost Serch\n2. A* With Misplaced Tile Heuristic\n3. A* With Euclidean Distance Heuristic\n"))
+    if algo_select == 1:
+        EightPuzzleSolver.search(puzz, "uniform")
+    elif algo_select == 2:
+        EightPuzzleSolver.search(puzz, "misplaced")
+    elif algo_select == 3:
+        EightPuzzleSolver.search(puzz, "euclidean")
         
 
