@@ -37,6 +37,47 @@ def forward_selection(num_features, all_features_set, best_accuracy):
     else:
         print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy}%")
 
+def backward_elimination(num_features, all_features_set, best_accuracy):
+    current_features = all_features_set.copy()  # start with all features
+    best_features = current_features.copy()
+    
+    print(f"Initial set: {current_features} with accuracy {best_accuracy}%\n")
+    
+    # continue until we have only one feature left
+    while len(current_features) > 1:
+        possible_features = {}  # dict with key as feature subset and value as accuracy
+        
+        # try removing each feature one at a time
+        for f in current_features:
+            features_subset = current_features - {f}
+            features_key = frozenset(features_subset)
+            possible_features[features_key] = eval_func()
+        
+        # print all tested subsets
+        for key, value in possible_features.items():
+            print(f"Using feature(s) {{{', '.join(map(str, key))}}} accuracy is {value}%")
+        
+        # find the best feature subset (one with highest accuracy)
+        best_key, max_value = max(possible_features.items(), key=lambda kv: kv[1])
+        
+        # update best overall if we found a better combination
+        if max_value > best_accuracy:
+            best_accuracy = max_value
+            best_features = set(best_key)
+            print(f"\nNew global best found!")
+        
+        print(f"\nFeature set {set(best_key)} was best, accuracy is {max_value}%")
+        
+        # check if accuracy decreased
+        if max_value < best_accuracy:
+            print("\n(Warning, Accuracy has decreased from global best!)")
+            # Continue with the search but keep track of global best
+        
+        current_features = set(best_key)  # update current features for next iteration
+        print()
+    
+    print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy}%")
+
 
 if __name__ == "__main__":
     print("Welcome to our Feature Selection Algorithm")
