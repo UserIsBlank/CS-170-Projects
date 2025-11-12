@@ -6,6 +6,8 @@ def eval_func():
     return round(random.uniform(0, 100), 1)
 
 def forward_selection(num_features, all_features_set, best_accuracy):
+    print(f"\nUsing no features and \"random\" evaluation, I get an accuracy of {best_accuracy}%\n")
+    print("Beginning Search")
     best_features = set() #subset of best features
 
     #best feature subset can be at most the total # of features
@@ -38,6 +40,7 @@ def forward_selection(num_features, all_features_set, best_accuracy):
         print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy}%")
 
 def backward_elimination(num_features, all_features_set, best_accuracy):
+    print("\nBeginning Search")
     current_features = all_features_set.copy()  # start with all features
     best_features = current_features.copy()
     
@@ -88,7 +91,7 @@ if __name__ == "__main__":
     all_features = set(range(1, num_features + 1)) #total features stored in set
     best_accuracy = eval_func()
 
-    print(f"\nUsing no features and \"random\" evaluation, I get an accuracy of {best_accuracy}%\n")
-    print("Beginning Search")
     if algo == 1:
         forward_selection(num_features, all_features, best_accuracy)
+    if algo == 2:
+        backward_elimination(num_features, all_features, best_accuracy)
