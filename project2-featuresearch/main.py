@@ -2,13 +2,14 @@
 import random
 
 #stub eval func (returns random percentage)
-def eval_func():
+def eval_func(features):
     return round(random.uniform(0, 100), 1)
 
 def forward_selection(num_features, all_features_set, best_accuracy):
     print(f"\nUsing no features and \"random\" evaluation, I get an accuracy of {best_accuracy}%\n")
     print("Beginning Search")
     best_features = set() #subset of best features
+    best_accuracy = eval_func(best_features)
 
     #best feature subset can be at most the total # of features
     while len(best_features) < num_features:
@@ -39,12 +40,15 @@ def forward_selection(num_features, all_features_set, best_accuracy):
     else:
         print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy}%")
 
-def backward_elimination(num_features, all_features_set, best_accuracy):
+def backward_elimination(num_features, all_features_set):
     print("\nBeginning Search")
-    current_features = all_features_set.copy()  # start with all features
-    best_features = current_features.copy()
+    current_features = all_features_set.copy()
+    best_accuracy = eval_func(current_features)
+    global_best_features = current_features.copy()
+    global_best_accuracy = best_accuracy
     
-    print(f"Initial set: {current_features} with accuracy {best_accuracy}%\n")
+    best_accuracy = eval_func(current_features)  # Calculate actual accuracy
+    print(f"Using all features {{{', '.join(map(str, current_features))}}}, I get an accuracy of {best_accuracy}%\n")
     
     # continue until we have only one feature left
     while len(current_features) > 1:
@@ -59,14 +63,17 @@ def backward_elimination(num_features, all_features_set, best_accuracy):
         # print all tested subsets
         for key, value in possible_features.items():
             print(f"Using feature(s) {{{', '.join(map(str, key))}}} accuracy is {value}%")
+
+        if not possible_features:
+            break
         
         # find the best feature subset (one with highest accuracy)
         best_key, max_value = max(possible_features.items(), key=lambda kv: kv[1])
         
         # update best overall if we found a better combination
-        if max_value > best_accuracy:
-            best_accuracy = max_value
-            best_features = set(best_key)
+        if max_value > global_best_accuracy:
+            global_best_accuracy = max_value
+            global_best_features = set(best_key)
             print(f"\nNew global best found!")
         
         print(f"\nFeature set {set(best_key)} was best, accuracy is {max_value}%")
@@ -77,21 +84,28 @@ def backward_elimination(num_features, all_features_set, best_accuracy):
             # Continue with the search but keep track of global best
         
         current_features = set(best_key)  # update current features for next iteration
+        best_accuracy = max_value
+
         print()
     
-    print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy}%")
+    print(f"Finished search! The best feature subset is {global_best_features}, which has an accuracy of {global_best_accuracy}%")
+    return global_best_features, global_best_accuracy
 
 
 if __name__ == "__main__":
     print("Welcome to our Feature Selection Algorithm")
     num_features = int(input("Please enter total number of features: "))
     print("Type the number of the algorithm you want to run\n")
-    algo = int(input("Forward Selection\nBackward Elimination\n"))
+    print("1. Forward Selection\n")
+    print("2. Backward Elimination\n")
+    
+    algo = int(input())
 
     all_features = set(range(1, num_features + 1)) #total features stored in set
-    best_accuracy = eval_func()
 
     if algo == 1:
-        forward_selection(num_features, all_features, best_accuracy)
+        forward_selection(num_features, all_features)
     if algo == 2:
-        backward_elimination(num_features, all_features, best_accuracy)
+        backward_elimination(num_features, all_features)
+    else:
+        print("Invalid input")
