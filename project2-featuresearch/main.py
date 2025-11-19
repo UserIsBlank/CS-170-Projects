@@ -5,11 +5,11 @@ import random
 def eval_func(features):
     return round(random.uniform(0, 100), 1)
 
-def forward_selection(num_features, all_features_set, best_accuracy):
-    print(f"\nUsing no features and \"random\" evaluation, I get an accuracy of {best_accuracy}%\n")
-    print("Beginning Search")
+def forward_selection(num_features, all_features_set):
     best_features = set() #subset of best features
     best_accuracy = eval_func(best_features)
+    print(f"\nUsing no features and \"random\" evaluation, I get an accuracy of {best_accuracy}%\n")
+    print("Beginning Search")
 
     #best feature subset can be at most the total # of features
     while len(best_features) < num_features:
@@ -19,7 +19,7 @@ def forward_selection(num_features, all_features_set, best_accuracy):
             if f in best_features: continue
             #union of the subset of best features and one of the other individual features
             features_key = frozenset(best_features | {f}) #make set immutable to use as key
-            possible_features[features_key] = eval_func()
+            possible_features[features_key] = eval_func(features_key)
         
         for key, value in possible_features.items():
             print(f"Using feature(s) {{{', '.join(map(str, key))}}} accuracy is {value}%")
@@ -58,7 +58,7 @@ def backward_elimination(num_features, all_features_set):
         for f in current_features:
             features_subset = current_features - {f}
             features_key = frozenset(features_subset)
-            possible_features[features_key] = eval_func()
+            possible_features[features_key] = eval_func(current_features)
         
         # print all tested subsets
         for key, value in possible_features.items():
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
     if algo == 1:
         forward_selection(num_features, all_features)
-    if algo == 2:
+    elif algo == 2:
         backward_elimination(num_features, all_features)
     else:
         print("Invalid input")
