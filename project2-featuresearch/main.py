@@ -1,6 +1,23 @@
 # PROJECT 2 - Feature Search
 import random
 
+#load dataset
+def load_dataset(path):
+    class_label = []
+    features = []
+    instance_ids = []
+
+    #read small dataset
+    with open(path, "r") as f:
+        for idx, line in enumerate(f): #each line = 1 instance
+            floats = line.split()
+            curr_class = int(float(floats[0])) #class label is first column
+            curr_features = [float(x) for x in floats[1:]] #rest of the columns are features
+            instance_ids.append(idx) #store instance ID
+            class_label.append(curr_class)
+            features.append(curr_features)
+    return class_label, features, instance_ids
+
 #stub eval func (returns random percentage)
 def eval_func(features):
     return round(random.uniform(0, 100), 1)
