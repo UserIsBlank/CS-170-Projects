@@ -1,9 +1,9 @@
 # PROJECT 2 - Feature Search
 import random
 import math
-import time # Added for timing requirements
+import time # for timing steps
 
-class Classifier():
+class Classifier:
     def __init__(self, class_label, features):
         self.class_label = class_label
         self.features = features
@@ -90,34 +90,41 @@ class Validator:
         self.classifier = classifier
 
     def evaluate(self, feature_subset, instance_ids):
-        # Convert 1-based feature IDs (from search) to 0-based indices (for list access)
+        # shift feature index down to match
         if not feature_subset:
-            subset_0_based = None
+            new_feature_subset = None
         else:
-            subset_0_based = [f - 1 for f in feature_subset]
+            new_feature_subset = [f - 1 for f in feature_subset]
         
         correct_predictions = 0
         
+        #start timer
+        start_time = time.time()
         # Leave-One-Out Cross Validation Loop
         for i in range(len(instance_ids)):
-            # 1. Isolate the test instance ID
+            # Isolate the test instance ID
             test_id = instance_ids[i]
+            print(f"Testing Instance {test_id}")
             
-            # 2. Create the training set (all IDs except the test_id)
+            # Create the training set (all IDs except the test_id)
             training_ids = instance_ids[:i] + instance_ids[i+1:]
             
-            # 3. Train classifier on this specific fold
+            # Train classifier on this specific fold
             self.classifier.training(training_ids)
             
-            # 4. Test on the isolated instance
-            predicted_label = self.classifier.test(test_id, subset_0_based)
+            # Test on the isolated instance
+            predicted_label = self.classifier.test(test_id, new_feature_subset)
             
-            # 5. Check if prediction is correct
+            # Check if prediction is correct
             actual_label = self.classifier.class_label[test_id]
             if predicted_label == actual_label:
                 correct_predictions += 1
+                print(f"Prediction correct! Predicted class label {predicted_label} matches actual class label {actual_label}")
+            print(f"Finished testing instance {test_id} in {time.time() - start_time:.2f} seconds.\n")
                 
         accuracy = correct_predictions / len(instance_ids)
+        end_time = time.time()
+        print(f"Finished evaluation in {end_time - start_time:.2f} seconds.")
         return accuracy * 100
 
 #load dataset
@@ -143,41 +150,45 @@ def load_dataset(path):
     return class_label, features, instance_ids
 
 def forward_selection(num_features, all_features_set, validator, instance_ids):
-    best_features = set() 
-    best_accuracy = validator.evaluate(best_features, instance_ids)
+    best_features = set() #subset of best features
+    best_accuracy = validator.evaluate(best_features, instance_ids) #get initial accuracy of empty set
     
     print(f"\nUsing no features, I get an accuracy of {best_accuracy}%\n")
     print("Beginning Search")
     
-    start_time = time.time() # Start Timer
+    start_time = time.time() #start timer
 
     #best feature subset can be at most the total # of features
     while len(best_features) < num_features:
-        possible_features = {} 
+        #the possible new feature subsets that can be made using the last iteration's best_features
+        possible_features = {} #dict w/ key as feature subset and value as accuracy
         for f in all_features_set:
             if f in best_features: continue
             
+            #union of the subset of best features and one of the other individual features
             current_subset = best_features | {f}
-            # CALL VALIDATOR HERE
+            #get new accuracy of current feature subset
             accuracy = validator.evaluate(current_subset, instance_ids)
             
             print(f"Using feature(s) {{{', '.join(map(str, current_subset))}}} accuracy is {accuracy}%")
-            possible_features[frozenset(current_subset)] = accuracy
+            possible_features[frozenset(current_subset)] = accuracy #make set immutable to use as key
         
         if not possible_features: break
 
+        #find best feature subset in features (one w/ highest accuracy)
         best_subset_key, max_accuracy = max(possible_features.items(), key=lambda kv: kv[1])
         
         if max_accuracy < best_accuracy:
             print("\n(Warning, Accuracy has decreased!)")
         
-        best_features = set(best_subset_key)
+        best_features = set(best_subset_key) #convert from frozenset back to set
         best_accuracy = max_accuracy
         print(f"\nFeature set {best_features} was best, accuracy is {best_accuracy}%\n")
     
     end_time = time.time() # End Timer
     print(f"Search finished in {end_time - start_time:.2f} seconds.")
     
+    # if accuracy immediately decreased at first iteration
     if not best_features:
         print(f"Finished search!! The best feature subset is no features, which has an accuracy of {best_accuracy}%")
     else:
@@ -189,28 +200,33 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
     
     start_time = time.time() # Start Timer
     
-    best_accuracy = validator.evaluate(current_features, instance_ids)
+    best_accuracy = validator.evaluate(current_features, instance_ids) # Calculate actual accuracy
     print(f"Using all features {{{', '.join(map(str, current_features))}}}, I get an accuracy of {best_accuracy}%\n")
     
     global_best_features = current_features.copy()
     global_best_accuracy = best_accuracy
 
+    # continue until we have only one feature left
     while len(current_features) > 1:
-        possible_features = {} 
+        possible_features = {} # dict with key as feature subset and value as accuracy
         
+        # try removing each feature one at a time
         for f in current_features:
             subset = current_features - {f}
-            # CALL VALIDATOR HERE
+            #get new accuracy of current feature subset
             accuracy = validator.evaluate(subset, instance_ids)
             
+            # print all tested subsets
             print(f"Using feature(s) {{{', '.join(map(str, subset))}}} accuracy is {accuracy}%")
             possible_features[frozenset(subset)] = accuracy
 
         if not possible_features:
             break
         
+        # find the best feature subset (one with highest accuracy)
         best_subset_key, max_accuracy = max(possible_features.items(), key=lambda kv: kv[1])
         
+        # update best overall if we found a better combination
         if max_accuracy > global_best_accuracy:
             global_best_accuracy = max_accuracy
             global_best_features = set(best_subset_key)
@@ -218,8 +234,10 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
         
         print(f"\nFeature set {set(best_subset_key)} was best, accuracy is {max_accuracy}%")
         
+        # check if accuracy decreased
         if max_accuracy < best_accuracy:
             print("\n(Warning, Accuracy has decreased from global best!)")
+            # Continue with the search but keep track of global best
         
         current_features = set(best_subset_key)
         best_accuracy = max_accuracy
@@ -246,8 +264,8 @@ if __name__ == "__main__":
         my_classifier = Classifier(class_labels, features)
         my_validator = Validator(my_classifier)
 
-        # --- SANITY CHECK (Required by PDF to verify Part II) ---
-        print("\n--- Running Sanity Check ---")
+        # trace for part II - check NN accuracy for specified features
+        print("\n--- Part II Accuracy ---")
         if "small" in filename.lower():
             print("Detected Small Dataset. Checking features {3, 5, 7}...")
             acc = my_validator.evaluate({3, 5, 7}, instance_ids)
@@ -261,19 +279,19 @@ if __name__ == "__main__":
         print("----------------------------\n")
         # --------------------------------------------------------
 
-        print(f"Type the number of the algorithm you want to run")
-        print("1. Forward Selection")
-        print("2. Backward Elimination")
+        # print(f"Type the number of the algorithm you want to run")
+        # print("1. Forward Selection")
+        # print("2. Backward Elimination")
         
-        try:
-            algo = int(input())
-            all_features = set(range(1, num_features + 1)) 
+        # try:
+        #     algo = int(input())
+        #     all_features = set(range(1, num_features + 1)) 
 
-            if algo == 1:
-                forward_selection(num_features, all_features, my_validator, instance_ids)
-            elif algo == 2:
-                backward_elimination(num_features, all_features, my_validator, instance_ids)
-            else:
-                print("Invalid Algorithm Selection")
-        except ValueError:
-            print("Please enter a number.")
+        #     if algo == 1:
+        #         forward_selection(num_features, all_features, my_validator, instance_ids)
+        #     elif algo == 2:
+        #         backward_elimination(num_features, all_features, my_validator, instance_ids)
+        #     else:
+        #         print("Invalid Algorithm Selection")
+        # except ValueError:
+        #     print("Please enter a number.")
