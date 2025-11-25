@@ -1,5 +1,84 @@
 # PROJECT 2 - Feature Search
 import random
+import math
+
+class Classifier():
+    def __init__(self, class_label, features):
+        self.class_label = class_label
+        self.features = features
+
+        #for training
+        self.training_ids = [] #set of training instances (IDs)
+        self.training_class_label = [] #set of all training class labels (all labels except test one)
+        self.normalized_training_features = [] #set of all normalized training feature sets
+        self.means = []
+        self.stds = []
+
+    #training function - save normalized training data
+    def training(self, training_ids):
+        self.training_ids = training_ids
+        self.training_class_label = [self.class_label[i] for i in training_ids]
+        training_features = [self.features[i] for i in training_ids] #raw features
+        self.normalized_training_features = []
+
+        #find mean of each feature column
+        self.means = [0.0] * len(training_features[0])
+        for i in range(len(training_features[0])): #features within feature set
+            total = 0.0
+            for j in training_features: #feature set 0...n
+                total += j[i]
+            self.means[i] = total / len(training_ids)
+
+        #find std of each feature column
+        self.stds = [0.0] * len(training_features[0])
+        for i in range(len(training_features[0])): #features within feature set
+            var = 0.0
+            for j in training_features: #feature set 0...n
+                var += pow((j[i] - self.means[i]), 2)
+            self.stds[i] = math.sqrt(var / len(training_ids))
+
+        #normalize
+        for f in training_features: #feature set 0...n
+            norm_f = [] #normalized features for 1 feature set
+            for j in range(len(training_features[0])): #features within the feature set
+                if self.stds[j] == 0:
+                    norm_f.append(0.0) #avoid having 0 as denominator
+                else:
+                    z_score = (f[j] - self.means[j]) / self.stds[j]
+                    norm_f.append(z_score)
+            self.normalized_training_features.append(norm_f) #set of all normalized feature sets
+
+    #testing function - predict class label
+    def test(self, test_id, feature_subset=None):
+        test_features = self.features[test_id] #set of raw features in this test instance
+        normalized_test_features = [] #set of normalized features in this test instance
+        #normalize test features
+        for i in range(len(test_features)):
+            if self.stds[i] == 0:
+                normalized_test_features.append(0.0)
+            else:
+                z_score = (test_features[i] - self.means[i]) / self.stds[i]
+                normalized_test_features.append(z_score)
+        
+        closest_dist = float('inf')
+        nearest_class_label = None
+        for i in range(len(self.normalized_training_features)): #loop through set of normalized training feature sets
+            train_instance = self.normalized_training_features[i] 
+
+            #Euclidean distance
+            curr_dist = 0.0
+            if feature_subset is None: #all features
+                for j in range(len(train_instance)): #calculate distance of each feature in training instance
+                    curr_dist += pow((train_instance[j] - normalized_test_features[j]), 2)
+            else: #feature selection
+                for j in feature_subset:
+                    curr_dist += pow((train_instance[j] - normalized_test_features[j]), 2)
+            curr_dist = math.sqrt(curr_dist)
+
+            if curr_dist < closest_dist:
+                closest_dist = curr_dist
+                nearest_class_label = self.training_class_label[i] #get corresponding class label of training instance
+        return nearest_class_label
 
 #load dataset
 def load_dataset(path):
