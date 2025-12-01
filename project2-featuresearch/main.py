@@ -98,13 +98,10 @@ class Validator:
         
         correct_predictions = 0
         
-        #start timer
-        start_time = time.time()
         # Leave-One-Out Cross Validation Loop
         for i in range(len(instance_ids)):
             # Isolate the test instance ID
             test_id = instance_ids[i]
-            print(f"Testing Instance {test_id}")
             
             # Create the training set (all IDs except the test_id)
             training_ids = instance_ids[:i] + instance_ids[i+1:]
@@ -119,12 +116,8 @@ class Validator:
             actual_label = self.classifier.class_label[test_id]
             if predicted_label == actual_label:
                 correct_predictions += 1
-                print(f"Prediction correct! Predicted class label {predicted_label} matches actual class label {actual_label}")
-            print(f"Finished testing instance {test_id} in {time.time() - start_time:.2f} seconds.\n")
                 
         accuracy = correct_predictions / len(instance_ids)
-        end_time = time.time()
-        print(f"Finished evaluation in {end_time - start_time:.2f} seconds.")
         return accuracy * 100
 
 #load dataset
@@ -266,16 +259,26 @@ if __name__ == "__main__":
 
         # trace for part II - check NN accuracy for specified features
         print("\n--- Part II Accuracy ---")
+        print("What feature subset would you like to check? Type numbers separated by spaces")
+        user_features = set(map(int, input().split())) #specific feature subset as input
+        print()
+
         if "small" in filename.lower():
-            print("Detected Small Dataset. Checking features {3, 5, 7}...")
-            acc = my_validator.evaluate({3, 5, 7}, instance_ids)
-            print(f"Accuracy for {{3, 5, 7}} is {acc}% (Expected ~89%)")
+            print(f"Small Dataset: Checking features {user_features}...\n")
+            print("Starting evaluation...") #start timer for eval
+            eval_start = time.time()
+            acc = my_validator.evaluate(user_features, instance_ids)
+            print(f"Accuracy for {user_features} is {acc}%")
         elif "large" in filename.lower():
-            print("Detected Large Dataset. Checking features {1, 15, 27}...")
-            acc = my_validator.evaluate({1, 15, 27}, instance_ids)
-            print(f"Accuracy for {{1, 15, 27}} is {acc}% (Expected ~94.9%)")
+            print(f"Large Dataset: Checking features {user_features}...\n")
+            print("Starting evaluation...")
+            eval_start = time.time()
+            acc = my_validator.evaluate(user_features, instance_ids)
+            print(f"Accuracy for {user_features} is {acc}%")
         else:
             print("Custom dataset detected. Skipping specific feature check.")
+        eval_end = time.time() #end of eval
+        print(f"Finished evaluation in {eval_end - eval_start:.2f} seconds.\n")
         print("----------------------------\n")
         # --------------------------------------------------------
 
