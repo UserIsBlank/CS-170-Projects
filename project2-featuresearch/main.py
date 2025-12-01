@@ -250,36 +250,39 @@ if __name__ == "__main__":
     
     class_labels, features, instance_ids = load_dataset(filename)
     
-    if features:
-        num_features = len(features[0])
+    if not features:
+        print("No data loaded. Exiting program.")
+        exit()
         
-        # Initialize Classifier and Validator
-        my_classifier = Classifier(class_labels, features)
-        my_validator = Validator(my_classifier)
+    num_features = len(features[0])
+    
+    # Initialize Classifier and Validator
+    my_classifier = Classifier(class_labels, features)
+    my_validator = Validator(my_classifier)
 
-        # trace for part II - check NN accuracy for specified features
-        print("\n--- Part II Accuracy ---")
-        print("What feature subset would you like to check? Type numbers separated by spaces")
-        user_features = set(map(int, input().split())) #specific feature subset as input
-        print()
+    # trace for part II - check NN accuracy for specified features
+    print("\n--- Part II Accuracy ---")
+    print("What feature subset would you like to check? Type numbers separated by spaces")
+    user_features = set(map(int, input().split())) #specific feature subset as input
+    print()
 
-        if "small" in filename.lower():
-            print(f"Small Dataset: Checking features {user_features}...\n")
-            print("Starting evaluation...") #start timer for eval
-            eval_start = time.time()
-            acc = my_validator.evaluate(user_features, instance_ids)
-            print(f"Accuracy for {user_features} is {acc}%")
-        elif "large" in filename.lower():
-            print(f"Large Dataset: Checking features {user_features}...\n")
-            print("Starting evaluation...")
-            eval_start = time.time()
-            acc = my_validator.evaluate(user_features, instance_ids)
-            print(f"Accuracy for {user_features} is {acc}%")
-        else:
-            print("Custom dataset detected. Skipping specific feature check.")
-        eval_end = time.time() #end of eval
-        print(f"Finished evaluation in {eval_end - eval_start:.2f} seconds.\n")
-        print("----------------------------\n")
+    if "small" in filename.lower():
+        print(f"Small Dataset: Checking features {user_features}...\n")
+        print("Starting evaluation...") #start timer for eval
+        eval_start = time.time()
+        acc = my_validator.evaluate(user_features, instance_ids)
+        print(f"Accuracy for {user_features} is {acc}%")
+    elif "large" in filename.lower():
+        print(f"Large Dataset: Checking features {user_features}...\n")
+        print("Starting evaluation...")
+        eval_start = time.time()
+        acc = my_validator.evaluate(user_features, instance_ids)
+        print(f"Accuracy for {user_features} is {acc}%")
+    else:
+        print("Custom dataset detected. Skipping specific feature check.")
+    eval_end = time.time() #end of eval
+    print(f"Finished evaluation in {eval_end - eval_start:.2f} seconds.\n")
+    print("----------------------------\n")
         # --------------------------------------------------------
 
         # print(f"Type the number of the algorithm you want to run")
