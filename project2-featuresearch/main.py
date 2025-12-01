@@ -146,7 +146,7 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
     best_features = set() #subset of best features
     best_accuracy = validator.evaluate(best_features, instance_ids) #get initial accuracy of empty set
     
-    print(f"\nUsing no features, I get an accuracy of {best_accuracy}%\n")
+    print(f"\nURunning nearest neighbor with no features (default rate), using leave-one-out evaluation, I get an accuracy of {best_accuracy:.1f}%\n")
     print("Beginning Search")
     
     start_time = time.time() #start timer
@@ -163,7 +163,7 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
             #get new accuracy of current feature subset
             accuracy = validator.evaluate(current_subset, instance_ids)
             
-            print(f"Using feature(s) {{{', '.join(map(str, current_subset))}}} accuracy is {accuracy}%")
+            print(f"Using feature(s) {{{', '.join(map(str, current_subset))}}} accuracy is {accuracy:.1f}%")
             possible_features[frozenset(current_subset)] = accuracy #make set immutable to use as key
         
         if not possible_features: break
@@ -176,16 +176,16 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
         
         best_features = set(best_subset_key) #convert from frozenset back to set
         best_accuracy = max_accuracy
-        print(f"\nFeature set {best_features} was best, accuracy is {best_accuracy}%\n")
+        print(f"\nFeature set {best_features} was best, accuracy is {best_accuracy:.1f}%\n")
     
     end_time = time.time() # End Timer
     print(f"Search finished in {end_time - start_time:.2f} seconds.")
     
     # if accuracy immediately decreased at first iteration
     if not best_features:
-        print(f"Finished search!! The best feature subset is no features, which has an accuracy of {best_accuracy}%")
+        print(f"Finished search!! The best feature subset is no features, which has an accuracy of {best_accuracy:.1f}%")
     else:
-        print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy}%")
+        print(f"Finished search!! The best feature subset is {best_features}, which has an accuracy of {best_accuracy:.1f}%")
 
 def backward_elimination(num_features, all_features_set, validator, instance_ids):
     print("\nBeginning Search")
@@ -194,7 +194,7 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
     start_time = time.time() # Start Timer
     
     best_accuracy = validator.evaluate(current_features, instance_ids) # Calculate actual accuracy
-    print(f"Using all features {{{', '.join(map(str, current_features))}}}, I get an accuracy of {best_accuracy}%\n")
+    print(f"Using all features {{{', '.join(map(str, current_features))}}}, I get an accuracy of {best_accuracy:.1f}%\n")
     
     global_best_features = current_features.copy()
     global_best_accuracy = best_accuracy
@@ -210,7 +210,7 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
             accuracy = validator.evaluate(subset, instance_ids)
             
             # print all tested subsets
-            print(f"Using feature(s) {{{', '.join(map(str, subset))}}} accuracy is {accuracy}%")
+            print(f"Using feature(s) {{{', '.join(map(str, subset))}}} accuracy is {accuracy:.1f}%")
             possible_features[frozenset(subset)] = accuracy
 
         if not possible_features:
@@ -255,6 +255,7 @@ if __name__ == "__main__":
         exit()
         
     num_features = len(features[0])
+    all_features_set = set(range(1, num_features + 1))
     
     # Initialize Classifier and Validator
     my_classifier = Classifier(class_labels, features)
@@ -288,6 +289,7 @@ if __name__ == "__main__":
         # print(f"Type the number of the algorithm you want to run")
         # print("1. Forward Selection")
         # print("2. Backward Elimination")
+        # print("3. Bertie's Special Algorithm")
         
         # try:
         #     algo = int(input())
