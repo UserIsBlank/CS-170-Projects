@@ -54,6 +54,20 @@ class Classifier:
 
     #testing function - predict class label
     def test(self, test_id, feature_subset=None):
+        #default rate
+        if feature_subset == []: #if doing default rate for forward selection (no features), just pick the most common class label (no way to perform NN)
+            class_0_count = 0 #for titanic dataset
+            class_1_count = 0
+            class_2_count = 0
+            for label in self.training_class_label:
+                if label == 1: class_1_count += 1
+                elif label == 2: class_2_count += 1
+                else: class_0_count += 1
+            if class_1_count >= class_0_count and class_1_count >= class_2_count: return 1
+            elif class_2_count >= class_0_count and class_2_count >= class_1_count: return 2
+            else: return 0
+
+        #non-default (using at least 1 feature)
         test_features = self.features[test_id] #set of raw features in this test instance
         normalized_test_features = [] #set of normalized features in this test instance
         #normalize test features
@@ -71,15 +85,6 @@ class Classifier:
 
             #Euclidean distance
             curr_dist = 0.0
-            if feature_subset == []: #if doing default rate for forward selection (no features), just pick the most common class label (no way to perform NN)
-                class_1_count = 0
-                class_2_count = 0
-                for label in self.training_class_label:
-                    if label == 1: class_1_count += 1
-                    elif label == 2: class_2_count += 1
-                if class_1_count >= class_2_count: return 1
-                else: return 2
-
             if feature_subset is None: #all features
                 for j in range(len(train_instance)): #calculate distance of each feature in training instance
                     curr_dist += pow((train_instance[j] - normalized_test_features[j]), 2)
@@ -100,8 +105,6 @@ class Validator:
 
     def evaluate(self, feature_subset, instance_ids):
         # shift feature index down to match
-        # if not feature_subset:
-        #     new_feature_subset = None
         if feature_subset is None or len(feature_subset) == 0:
             new_feature_subset = []
         else:
@@ -237,7 +240,7 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
             global_best_features = set(best_subset_key)
             print(f"\nNew global best found!")
         
-        print(f"\nFeature set {set(best_subset_key)} was best, accuracy is {max_accuracy}%")
+        print(f"\nFeature set {set(best_subset_key)} was best, accuracy is {max_accuracy:.1f}%")
         
         # check if accuracy decreased
         if max_accuracy < best_accuracy:
@@ -252,7 +255,7 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
     end_time = time.time() # End Timer
     print(f"Search finished in {end_time - start_time:.2f} seconds.")
 
-    print(f"Finished search! The best feature subset is {global_best_features}, which has an accuracy of {global_best_accuracy}%")
+    print(f"Finished search! The best feature subset is {global_best_features}, which has an accuracy of {global_best_accuracy:.1f}%")
     return global_best_features, global_best_accuracy
 
 
@@ -261,6 +264,7 @@ if __name__ == "__main__":
     filename = input("Type in the name of the file to test: ") 
     
     class_labels, features, instance_ids = load_dataset(filename)
+
     
     if not features:
         print("No data loaded. Exiting program.")
@@ -301,11 +305,16 @@ if __name__ == "__main__":
     print(f"Type the number of the algorithm you want to run")
     print("1. Forward Selection")
     print("2. Backward Elimination")
-    print("3. Bertie's Special Algorithm")
         
     try:
         algo = int(input())
         all_features = set(range(1, num_features + 1)) 
+        if "small" in filename.lower():
+            print("\nThis dataset has 10 features, with 100 instances.\n")
+        if "large" in filename.lower():
+            print("\nThis dataset has 40 features, with 1000 instances.\n")
+        if "titanic" in filename.lower():
+            print("\nThis dataset has 6 features, with 714 instances.\n")
 
         if algo == 1:
             forward_selection(num_features, all_features, my_validator, instance_ids)
