@@ -166,8 +166,6 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
     
     print("Beginning search.\n")
 
-    start_time = time.time() #start timer
-
     #best feature subset can be at most the total # of features
     while len(best_features) < num_features:
         #the possible new feature subsets that can be made using the last iteration's best_features
@@ -197,10 +195,6 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
         
         best_features = set(best_subset_key) #convert from frozenset back to set
         best_accuracy = max_accuracy
-        print(f"\nFeature set {best_features} was best, accuracy is {best_accuracy:.1f}%\n")
-    
-    end_time = time.time() # End Timer
-    print(f"Search finished in {end_time - start_time:.2f} seconds.")
     
     # if accuracy immediately decreased at first iteration
     if not best_features:
@@ -212,8 +206,6 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
 def backward_elimination(num_features, all_features_set, validator, instance_ids):
     print("\nPlease wait while I normalize the data... Done!")
     current_features = all_features_set.copy()
-    
-    start_time = time.time() # Start Timer
     
     best_accuracy = validator.evaluate(current_features, instance_ids) # Calculate actual accuracy
     sorted_current = sorted(current_features)
@@ -261,7 +253,6 @@ def backward_elimination(num_features, all_features_set, validator, instance_ids
 
         print()
     
-    end_time = time.time() # End Timer
     sorted_final = sorted(global_best_features)
     print(f"\nFinished search!! The best feature subset is {{{','.join(map(str, sorted_final))}}}, which has an accuracy of {global_best_accuracy:.1f}%")
     return global_best_features, global_best_accuracy
@@ -277,7 +268,6 @@ if __name__ == "__main__":
         exit()
         
     num_features = len(features[0])
-    all_features_set = set(range(1, num_features + 1))
 
     # trace for part II - check NN accuracy for specified features
     # print("\n--- Part II Accuracy ---")
@@ -308,8 +298,6 @@ if __name__ == "__main__":
     print("\t1) Forward Selection")
     print("\t2) Backward Elimination")
 
-    choice = input().strip()
-
     # Initialize Classifier and Validator
     my_classifier = Classifier(class_labels, features)
     my_validator = Validator(my_classifier)
@@ -318,18 +306,11 @@ if __name__ == "__main__":
         
     try:
         algo = int(input())
-        all_features = set(range(1, num_features + 1)) 
-        if "small" in filename.lower():
-            print("\nThis dataset has 10 features, with 100 instances.\n")
-        if "large" in filename.lower():
-            print("\nThis dataset has 40 features, with 1000 instances.\n")
-        if "titanic" in filename.lower():
-            print("\nThis dataset has 6 features, with 714 instances.\n")
 
         if algo == 1:
-            forward_selection(num_features, all_features, my_validator, instance_ids)
+            forward_selection(num_features, all_features_set, my_validator, instance_ids)
         elif algo == 2:
-            backward_elimination(num_features, all_features, my_validator, instance_ids)
+            backward_elimination(num_features, all_features_set, my_validator, instance_ids)
         else:
             print("Invalid Algorithm Selection")
     except ValueError:
