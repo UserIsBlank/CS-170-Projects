@@ -5,8 +5,8 @@ import time # for timing steps
 
 class Classifier:
     def __init__(self, class_label, features):
-        self.class_label = class_label
-        self.features = features
+        self.class_label = class_label[:]
+        self.features = features[:]
 
         #for training
         self.training_ids = [] #set of training instances (IDs)
@@ -71,6 +71,15 @@ class Classifier:
 
             #Euclidean distance
             curr_dist = 0.0
+            if feature_subset == []: #if doing default rate for forward selection (no features), just pick the most common class label (no way to perform NN)
+                class_1_count = 0
+                class_2_count = 0
+                for label in self.training_class_label:
+                    if label == 1: class_1_count += 1
+                    elif label == 2: class_2_count += 1
+                if class_1_count >= class_2_count: return 1
+                else: return 2
+
             if feature_subset is None: #all features
                 for j in range(len(train_instance)): #calculate distance of each feature in training instance
                     curr_dist += pow((train_instance[j] - normalized_test_features[j]), 2)
@@ -91,8 +100,10 @@ class Validator:
 
     def evaluate(self, feature_subset, instance_ids):
         # shift feature index down to match
-        if not feature_subset:
-            new_feature_subset = None
+        # if not feature_subset:
+        #     new_feature_subset = None
+        if feature_subset is None or len(feature_subset) == 0:
+            new_feature_subset = []
         else:
             new_feature_subset = [f - 1 for f in feature_subset]
         
@@ -146,7 +157,7 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
     best_features = set() #subset of best features
     best_accuracy = validator.evaluate(best_features, instance_ids) #get initial accuracy of empty set
     
-    print(f"\nURunning nearest neighbor with no features (default rate), using leave-one-out evaluation, I get an accuracy of {best_accuracy:.1f}%\n")
+    print(f"\nRunning nearest neighbor with no features (default rate), using leave-one-out evaluation, I get an accuracy of {best_accuracy:.1f}%\n")
     print("Beginning Search")
     
     start_time = time.time() #start timer
@@ -173,6 +184,7 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
         
         if max_accuracy < best_accuracy:
             print("\n(Warning, Accuracy has decreased!)")
+            break
         
         best_features = set(best_subset_key) #convert from frozenset back to set
         best_accuracy = max_accuracy
@@ -262,44 +274,44 @@ if __name__ == "__main__":
     my_validator = Validator(my_classifier)
 
     # trace for part II - check NN accuracy for specified features
-    print("\n--- Part II Accuracy ---")
-    print("What feature subset would you like to check? Type numbers separated by spaces")
-    user_features = set(map(int, input().split())) #specific feature subset as input
-    print()
+    # print("\n--- Part II Accuracy ---")
+    # print("What feature subset would you like to check? Type numbers separated by spaces")
+    # user_features = set(map(int, input().split())) #specific feature subset as input
+    # print()
 
-    if "small" in filename.lower():
-        print(f"Small Dataset: Checking features {user_features}...\n")
-        print("Starting evaluation...") #start timer for eval
-        eval_start = time.time()
-        acc = my_validator.evaluate(user_features, instance_ids)
-        print(f"Accuracy for {user_features} is {acc}%")
-    elif "large" in filename.lower():
-        print(f"Large Dataset: Checking features {user_features}...\n")
-        print("Starting evaluation...")
-        eval_start = time.time()
-        acc = my_validator.evaluate(user_features, instance_ids)
-        print(f"Accuracy for {user_features} is {acc}%")
-    else:
-        print("Custom dataset detected. Skipping specific feature check.")
-    eval_end = time.time() #end of eval
-    print(f"Finished evaluation in {eval_end - eval_start:.2f} seconds.\n")
-    print("----------------------------\n")
+    # if "small" in filename.lower():
+    #     print(f"Small Dataset: Checking features {user_features}...\n")
+    #     print("Starting evaluation...") #start timer for eval
+    #     eval_start = time.time()
+    #     acc = my_validator.evaluate(user_features, instance_ids)
+    #     print(f"Accuracy for {user_features} is {acc}%")
+    # elif "large" in filename.lower():
+    #     print(f"Large Dataset: Checking features {user_features}...\n")
+    #     print("Starting evaluation...")
+    #     eval_start = time.time()
+    #     acc = my_validator.evaluate(user_features, instance_ids)
+    #     print(f"Accuracy for {user_features} is {acc}%")
+    # else:
+    #     print("Custom dataset detected. Skipping specific feature check.")
+    # eval_end = time.time() #end of eval
+    # print(f"Finished evaluation in {eval_end - eval_start:.2f} seconds.\n")
+    # print("----------------------------\n")
         # --------------------------------------------------------
 
-        # print(f"Type the number of the algorithm you want to run")
-        # print("1. Forward Selection")
-        # print("2. Backward Elimination")
-        # print("3. Bertie's Special Algorithm")
+    print(f"Type the number of the algorithm you want to run")
+    print("1. Forward Selection")
+    print("2. Backward Elimination")
+    print("3. Bertie's Special Algorithm")
         
-        # try:
-        #     algo = int(input())
-        #     all_features = set(range(1, num_features + 1)) 
+    try:
+        algo = int(input())
+        all_features = set(range(1, num_features + 1)) 
 
-        #     if algo == 1:
-        #         forward_selection(num_features, all_features, my_validator, instance_ids)
-        #     elif algo == 2:
-        #         backward_elimination(num_features, all_features, my_validator, instance_ids)
-        #     else:
-        #         print("Invalid Algorithm Selection")
-        # except ValueError:
-        #     print("Please enter a number.")
+        if algo == 1:
+            forward_selection(num_features, all_features, my_validator, instance_ids)
+        elif algo == 2:
+            backward_elimination(num_features, all_features, my_validator, instance_ids)
+        else:
+            print("Invalid Algorithm Selection")
+    except ValueError:
+        print("Please enter a number.")
