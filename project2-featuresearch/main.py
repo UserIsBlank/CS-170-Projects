@@ -161,7 +161,6 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
 
     print("\nPlease wait while I normalize the data... Done!")
     best_accuracy = validator.evaluate(best_features, instance_ids) #get initial accuracy of empty set
-    global_best_accuracy = best_accuracy
     
     print(f'Running nearest neighbor with no features (default rate), using "leaving-one-out" evaluation, I get an accuracy of {best_accuracy:.1f}%\n')
     
@@ -190,25 +189,21 @@ def forward_selection(num_features, all_features_set, validator, instance_ids):
         
         sorted_best = sorted(best_subset_key)
         print(f"\nFeature set {{{','.join(map(str, sorted_best))}}} was best, accuracy is {max_accuracy:.1f}%\n")
-        
-        # update best overall if we found a better combination
-        if max_accuracy > global_best_accuracy:
-            global_best_accuracy = max_accuracy
-            global_best_features = set(best_subset_key)
 
         # check if accuracy decreased
         if max_accuracy < best_accuracy:
-            print("(Warning, Accuracy has decreased! Continuing search in case of local maxima)\n")
+            print("(Warning, Accuracy has decreased!)\n")
+            break
         
         best_features = set(best_subset_key) #convert from frozenset back to set
         best_accuracy = max_accuracy
     
     # if accuracy immediately decreased at first iteration
     if not best_features:
-        print(f"\nFinished search!! The best feature subset is {{}}, which has an accuracy of {global_best_accuracy:.1f}%")
+        print(f"\nFinished search!! The best feature subset is {{}}, which has an accuracy of {best_accuracy:.1f}%")
     else:
-        sorted_final = sorted(global_best_features)
-        print(f"\nFinished search!! The best feature subset is {{{','.join(map(str, sorted_final))}}}, which has an accuracy of {global_best_accuracy:.1f}%")
+        sorted_final = sorted(best_features)
+        print(f"\nFinished search!! The best feature subset is {{{','.join(map(str, sorted_final))}}}, which has an accuracy of {best_accuracy:.1f}%")
 
 def backward_elimination(num_features, all_features_set, validator, instance_ids):
     print("\nPlease wait while I normalize the data... Done!")
