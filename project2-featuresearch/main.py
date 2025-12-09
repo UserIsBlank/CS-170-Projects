@@ -3,6 +3,15 @@ import random
 import math
 import time # for timing steps
 
+# Group: Officially Unintelligent - Joshua Ha (jha066), Jefren Nicolai Ofiaza (jofia001), Selina Wu (swu245)
+# Small Dataset Results:
+    # Forward: Feature Subset: {3, 5}, Accuracy: 92%
+    # Backward: Feature Subset: {2, 4, 5, 7, 10}, Accuracy: 82%
+# Large Dataset Results:
+    # Feature Subset: {1, 27}, Accuracy: 95.5%
+# Titanic Datset Results:
+    # Feature Subset: {2}, Accuracy: 78%
+
 class Classifier:
     def __init__(self, class_label, features):
         self.class_label = class_label[:]
